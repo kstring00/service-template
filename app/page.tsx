@@ -33,11 +33,17 @@ export default function Home() {
 
   const structuredData = {
     "@context": "https://schema.org",
-    "@type": "AutoWash",
+    "@type": "LocalBusiness",
     name: business.businessName,
     description: business.description,
     telephone: business.phone,
-    email: business.email,
+    email: business.email || undefined,
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: business.city,
+      addressRegion: business.state,
+      addressCountry: "US"
+    },
     areaServed: business.cityLine,
     aggregateRating: business.googleRating && business.googleReviewCount ? {
       "@type": "AggregateRating",
