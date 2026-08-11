@@ -34,12 +34,12 @@ export const business: BusinessConfig = {
   bookingUrl: undefined,
   crmUrl: undefined,
   brand: {
-    background: "#090b0d",
-    surface: "#13171b",
-    ink: "#f6f3ec",
-    muted: "#a7adb2",
-    accent: "#d8ff54",
-    accent2: "#7ce0ff"
+    background: "#f5f8fa",
+    surface: "#0c2632",
+    ink: "#0d171c",
+    muted: "#69777e",
+    accent: "#00c8e8",
+    accent2: "#ff5b35"
   },
   features: {
     instantQuote: true,
