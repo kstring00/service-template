@@ -19,7 +19,7 @@ export type BusinessConfig = {
   cityLine: string;
   phone: string;
   smsNumber: string;
-  email: string;
+  email?: string;
   city: string;
   state: string;
   googleRating?: number;
