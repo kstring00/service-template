@@ -36,7 +36,7 @@ export function Header() {
         <span className="brand-copy"><strong>{business.shortName}</strong><small>LOCAL SERVICES</small></span>
       </a>
       <nav className="desktop-nav" aria-label="Primary navigation">
-        <a href="#packages">Services</a><a href="#results">Results</a><a href="#reviews">Reviews</a><a href="#area">Service Area</a><a href="#faq">FAQ</a>
+        <a href="#packages">Services</a><a href="#services">More Services</a><a href="#quote">Quote</a><a href="#faq">FAQ</a>
       </nav>
       <div className="header-actions">
         <a className="header-phone desktop-only" href={business.phone ? phoneHref : "#quote"}><Phone size={15} /> {business.phone || "Contact"}</a>
@@ -98,7 +98,7 @@ export function Packages() {
     <section className="section section-light" id="packages">
       <div className="shell">
         <div className="split-heading">
-          <SectionHeading kicker="CORE SERVICES" title="Start with what the project actually needs." body="the team's public information emphasizes thorough detailing, project correction, and ceramic coating rather than a one-size-fits-all menu." />
+          <SectionHeading kicker="CORE SERVICES" title="Start with what the project actually needs." body="Choose a service package that matches your needs, then ask about a custom scope." />
           <a className="text-link" href="#quote">Tell us what you need <ArrowRight size={16} /></a>
         </div>
         <div className="package-grid">
@@ -158,7 +158,7 @@ export function Process() {
 }
 
 export function Services() {
-  const enabled = services.filter((service) => service.enabled !== false && (!service.id.includes("ceramic") || business.features.ceramicCoating) && (!service.id.includes("project-correction") || business.features.projectCorrection));
+  const enabled = services.filter((service) => service.enabled !== false);
   return (
     <section className="section section-warm" id="services">
       <div className="shell">
