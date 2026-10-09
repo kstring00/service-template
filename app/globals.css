@@ -106,7 +106,7 @@ button, input, select { font: inherit; }
 .button-outline-dark { border-color: rgba(13,23,28,.28); color: #0d171c; background: transparent; }
 .button-large { min-height: 58px; padding: 0 24px; font-size: 12px; }
 
-/* HERO — bright automotive editorial, intentionally unlike the barber template */
+/* HERO — customizable service-business editorial layout */
 .hero {
   min-height: 760px;
   position: relative;
@@ -120,7 +120,7 @@ button, input, select { font: inherit; }
   color: #0d171c;
 }
 .hero::before {
-  content: "MOBILE DETAILING";
+  content: "LOCAL SERVICES";
   position: absolute;
   left: -36px;
   top: 50%;
@@ -142,7 +142,7 @@ button, input, select { font: inherit; }
   background: #0e2631;
 }
 .hero-media::after {
-  content: "WE COME TO YOU";
+  content: "YOUR SERVICE";
   position: absolute;
   right: 26px;
   bottom: 24px;

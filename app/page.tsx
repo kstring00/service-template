@@ -45,7 +45,7 @@ export default function Home() {
       addressCountry: "US"
     },
     areaServed: business.cityLine,
-    aggregateRating: business.googleRating && business.googleReviewCount ? {
+    aggregateRating: !business.previewMode && business.googleRating && business.googleReviewCount ? {
       "@type": "AggregateRating",
       ratingValue: business.googleRating,
       reviewCount: business.googleReviewCount
