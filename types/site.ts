@@ -1,75 +1,138 @@
-export type FeatureFlags = {
-  instantQuote: boolean;
-  onlineBooking: boolean;
-  maintenancePlans: boolean;
-  ceramicCoating: boolean;
-  paintCorrection: boolean;
-  fleetServices: boolean;
-  promotions: boolean;
-  beforeAfter: boolean;
-  serviceArea: boolean;
-};
+/**
+ * Shape of config/business.ts. Every piece of customer-facing business content
+ * lives in that one file so a clone only ever edits config, never components.
+ */
 
-export type BusinessConfig = {
-  previewMode: boolean;
-  businessName: string;
-  shortName: string;
-  tagline: string;
-  description: string;
-  cityLine: string;
-  phone: string;
-  smsNumber: string;
-  email?: string;
-  city: string;
-  state: string;
-  googleRating?: number;
-  googleReviewCount?: number;
-  googleReviewsUrl?: string;
-  instagramUrl?: string;
-  facebookUrl?: string;
-  tiktokUrl?: string;
-  yearsInBusiness?: number;
-  vehiclesDetailed?: string;
-  insured?: boolean;
-  mobileService: boolean;
-  shopAvailable: boolean;
-  bringsWaterPower?: boolean;
-  sameWeekAvailability?: boolean;
-  startingPrice?: string;
-  quoteUrl?: string;
-  bookingUrl?: string;
-  crmUrl?: string;
-  brand: { background: string; surface: string; ink: string; muted: string; accent: string; accent2: string };
-  features: FeatureFlags;
+export type VehicleSizeId = "sedan" | "mid" | "large";
+
+export type VehicleSize = {
+  id: VehicleSizeId;
+  label: string;
+  /** Examples shown under the label, e.g. "Civic, Camry, Mustang". */
+  examples: string;
 };
 
 export type DetailPackage = {
   id: string;
   name: string;
-  tagline: string;
-  description: string;
-  startingPrice?: string;
-  duration?: string;
+  /** One-line plain summary under the name. */
+  summary: string;
+  /** Price per vehicle size, in whole dollars. */
+  price: Record<VehicleSizeId, number>;
+  /** Time the car is tied up, in plain words, e.g. "2 to 3 hours". */
+  time: string;
+  /** Plain checklist of what is included. */
+  includes: string[];
+  /** Items this package adds over the one before it. Shown highlighted. */
+  addsOverPrevious?: string[];
+  /** Honest note about heavily soiled vehicles, shown on interior packages. */
+  badCarNote?: string;
+  /** id of the before/after pair that shows this package's result. */
+  proofPairId?: string;
   featured?: boolean;
-  idealFor: string;
-  features: string[];
-  quoteUrl?: string;
 };
 
-export type Service = {
+export type AddOn = {
   id: string;
   name: string;
-  description: string;
-  eyebrow: string;
-  startingPrice?: string;
-  image: string;
-  enabled?: boolean;
+  /** Flat price in dollars. Use priceRange for "from/to" items. */
+  price?: number;
+  priceRange?: [number, number];
+  /** What it fixes and what it cannot, in one or two plain sentences. */
+  note: string;
 };
 
-export type AddOn = { name: string; description: string; startingPrice?: string };
-export type GalleryItem = { id: string; src: string; alt: string; category: string; caption?: string };
-export type BeforeAfter = { id: string; before: string; after: string; category: string; title: string; description: string };
-export type Review = { id: string; name: string; quote: string; rating: number; detail: string };
-export type ServiceArea = { city: string; state: string; travelFee?: string; notes?: string };
+export type BeforeAfterPair = {
+  id: string;
+  /** Short label, e.g. "Full Detail · Pickup interior". */
+  label: string;
+  /** One line on what was done and what the owner should notice. */
+  caption: string;
+  /** Image basenames under public/images (without extension); see scripts/images.mjs. */
+  before: string;
+  after: string;
+  beforeAlt: string;
+  afterAlt: string;
+};
+
+export type Review = {
+  /** First name and last initial only, e.g. "Marisol T." */
+  name: string;
+  source: string;
+  quote: string;
+  /** Package or service the review is about, shown as context. */
+  service?: string;
+};
+
 export type FAQ = { question: string; answer: string };
-export type NeedMatch = { prompt: string; recommendation: string; detail: string; targetId: string };
+
+export type ProcessStep = { title: string; body: string };
+
+export type HoursRow = { days: string; hours: string };
+
+export type BusinessConfig = {
+  /** CONCEPT: nothing sends anywhere, every claim is labeled as a sample. */
+  mode: "concept" | "client";
+  businessName: string;
+  shortName: string;
+  town: string;
+  state: string;
+  /** Whole-number list of towns served, shown in the service-area section. */
+  serviceArea: string[];
+  serviceAreaNote: string;
+  mobile: boolean;
+  shop: boolean;
+  phoneDisplay: string;
+  phoneE164: string;
+  email: string;
+  hours: HoursRow[];
+  /** Answers the "do you need my water or power?" question in one line. */
+  waterPowerAnswer: string;
+  insuredStatement: string;
+  yearsInBusiness: number;
+  owner: {
+    name: string;
+    role: string;
+    photo: string;
+    photoAlt: string;
+    bio: string;
+  };
+  booking: {
+    /** "owner-confirms" means the form is a request, not a booking. */
+    model: "owner-confirms";
+    /** "I'll text you within 2 business hours to confirm your date." */
+    responsePromise: string;
+    depositLine: string;
+    cancellationLine: string;
+  };
+  headlines: {
+    hero: string;
+    heroSub: string;
+    heroNext: string;
+    proof: string;
+    packages: string;
+    process: string;
+    reviews: string;
+    area: string;
+    owner: string;
+    booking: string;
+    faq: string;
+  };
+  heroImage: { src: string; alt: string };
+  vanImage: { src: string; alt: string };
+  vehicleSizes: VehicleSize[];
+  packages: DetailPackage[];
+  addOns: AddOn[];
+  beforeAfter: BeforeAfterPair[];
+  process: ProcessStep[];
+  reviews: Review[];
+  faqs: FAQ[];
+  concept: {
+    tagText: string;
+    tagUrl: string;
+    footerLine: string;
+  };
+  /** Microsoft Clarity project id. Leave empty to disable tracking. */
+  clarityProjectId: string;
+  brand: { accent: string; accentDeep: string; ink: string; paper: string };
+};

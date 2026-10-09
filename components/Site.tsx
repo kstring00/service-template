@@ -1,27 +1,24 @@
-import {
-  ArrowRight,
-  ArrowUpRight,
-  Check,
-  ChevronRight,
-  Clock3,
-  MapPin,
-  MessageCircle,
-  Phone,
-  Sparkles,
-  Star,
-  WandSparkles,
-  Zap
-} from "lucide-react";
-import { business, phoneHref, smsHref } from "@/config/business";
-import { addOns, beforeAfter, faqs, gallery, needMatches, packages, reviews, reviewThemes, serviceAreas, services } from "@/data/site";
-import { getQuoteUrl, getSmsUrl } from "@/lib/conversion";
+import { Check, Clock3, MapPin, MessageCircle, Phone, ShieldCheck, Droplets } from "lucide-react";
+import { business, phoneHref, smsWithBody } from "@/config/business";
+import { imageAttrs } from "@/lib/images";
+import { addOnPriceLabel, money } from "@/lib/pricing";
 import { BeforeAfterSlider } from "@/components/BeforeAfterSlider";
-import { QuoteBuilder } from "@/components/QuoteBuilder";
+import { BookingForm } from "@/components/BookingForm";
+import { PackageButton } from "@/components/PackageButton";
+import { TrackedLink } from "@/components/TrackedLink";
 
-function SectionHeading({ kicker, title, body, light = false }: { kicker: string; title: string; body?: string; light?: boolean }) {
+/*
+ * Every section below answers at least one row of the objection map in the
+ * build prompt. Each row is ASSUMED until the owner or a real customer confirms
+ * it; the comment on each section names the rows it answers so they can be checked.
+ */
+
+const textHello = smsWithBody(`Hi ${business.shortName}, I'd like to book a detail.`);
+
+function SectionHeading({ kicker, title, body }: { kicker?: string; title: string; body?: string }) {
   return (
-    <div className={`section-heading ${light ? "section-heading-light" : ""}`}>
-      <span className="kicker">{kicker}</span>
+    <div className="section-heading">
+      {kicker ? <span className="kicker">{kicker}</span> : null}
       <h2>{title}</h2>
       {body ? <p>{body}</p> : null}
     </div>
@@ -30,195 +27,281 @@ function SectionHeading({ kicker, title, body, light = false }: { kicker: string
 
 export function Header() {
   return (
-    <header className="site-header" id="top">
+    <header className="site-header">
       <a className="brand" href="#top" aria-label={`${business.businessName} home`}>
-        <span className="brand-mark">P</span>
-        <span className="brand-copy"><strong>{business.shortName}</strong><small>MOBILE DETAILING</small></span>
+        <span className="brand-mark" aria-hidden="true">{business.shortName.charAt(0)}</span>
+        <span className="brand-copy"><strong>{business.shortName}</strong><small>Mobile Detailing</small></span>
       </a>
-      <nav className="desktop-nav" aria-label="Primary navigation">
-        <a href="#packages">Services</a><a href="#results">Results</a><a href="#reviews">Reviews</a><a href="#area">Service Area</a><a href="#faq">FAQ</a>
+      <nav className="site-nav" aria-label="Sections">
+        <a href="#proof">Results</a>
+        <a href="#packages">Packages</a>
+        <a href="#reviews">Reviews</a>
+        <a href="#area">Area</a>
+        <a href="#faq">FAQ</a>
       </nav>
       <div className="header-actions">
-        <a className="header-phone desktop-only" href={phoneHref}><Phone size={15} /> {business.phone}</a>
-        <a className="button button-accent header-quote" href="#quote">Request a Quote <ArrowRight size={16} /></a>
+        <TrackedLink href={phoneHref} event="call_tap" where="header" className="header-phone" ariaLabel={`Call ${business.phoneDisplay}`}>
+          <Phone size={18} aria-hidden="true" /><span>{business.phoneDisplay}</span>
+        </TrackedLink>
+        <a className="button button-primary button-compact" href="#book">Request a booking</a>
       </div>
     </header>
   );
 }
 
+/* Objection rows: "Do you come to me?", "Is this guy any good?" (first screen), one main action. */
 export function Hero() {
+  const hero = imageAttrs(business.heroImage.src, "(min-width: 900px) 55vw, 100vw");
+  const where = business.mobile && !business.shop ? "Mobile only. I come to your home or work." : business.shop && !business.mobile ? "Drop off at the shop." : "Mobile or drop-off, your choice.";
   return (
-    <section className="hero">
-      <div className="hero-media" aria-hidden="true">
-        <img src="https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=2000&q=90" alt="" />
-        <div className="hero-shade" />
+    <section className="hero" id="top">
+      <div className="hero-media">
+        <img {...hero} alt={business.heroImage.alt} fetchPriority="high" decoding="async" />
       </div>
-      <div className="shell hero-inner">
-        <div className="hero-copy">
-          <div className="eyebrow-row">
-            <span className="eyebrow"><Zap size={14} /> MOBILE DETAILING</span>
-            <span className="eyebrow"><MapPin size={14} /> {business.cityLine}</span>
-          </div>
-          <h1>Detailing for people who notice <em>everything.</em></h1>
-          <p className="hero-lede">Perfexxion is built around meticulous work, serious paint care, and the belief that if a part of the vehicle needs attention, it should not be ignored.</p>
-          <div className="hero-actions">
-            <a className="button button-accent button-large" href="#quote">Request a Quote <ArrowRight size={18} /></a>
-            <a className="button button-ghost button-large" href={smsHref}><MessageCircle size={18} /> Text Perfexxion</a>
-          </div>
-          <div className="hero-proof">
-            {business.googleRating ? <div><Star size={17} fill="currentColor" /><strong>{business.googleRating}/5</strong><span>{business.googleReviewCount} public reviews</span></div> : null}
-            {business.yearsInBusiness ? <div><span>ESTABLISHED</span><strong>2016</strong></div> : null}
-            <div><span>SERVICE MODEL</span><strong>Mobile detailing in League City</strong></div>
-          </div>
-          {business.previewMode ? <p className="hero-demo-note">Private concept preview. Business details shown here are based on public information and should be confirmed before launch.</p> : null}
+      <div className="hero-copy">
+        <p className="hero-where"><MapPin size={16} aria-hidden="true" /> {where} {business.serviceArea.slice(0, 3).join(", ")} and nearby.</p>
+        <h1>{business.headlines.hero}</h1>
+        <p className="hero-sub">{business.headlines.heroSub} {business.headlines.heroNext}</p>
+        <div className="hero-actions">
+          <a className="button button-primary button-large" href="#book">Request a booking</a>
+          <TrackedLink href={textHello} event="text_tap" where="hero" className="button button-ghost button-large">
+            <MessageCircle size={20} aria-hidden="true" /> Text {business.phoneDisplay}
+          </TrackedLink>
         </div>
-
-        <div className="hero-card">
-          <span className="mini-label">START WITH THE RESULT</span>
-          <h2>What does your vehicle need?</h2>
-          <p>Choose the problem first. Perfexxion can then help determine the right level of detailing, correction, or protection.</p>
-          <div className="hero-card-list">
-            {needMatches.slice(0, 3).map((item, index) => (
-              <a href={`#${item.targetId}`} key={item.prompt}><span>0{index + 1}</span><div><strong>{item.prompt}</strong><small>{item.recommendation}</small></div><ChevronRight size={17} /></a>
-            ))}
-          </div>
-        </div>
+        <ul className="hero-facts" aria-label="Quick facts">
+          <li><ShieldCheck size={18} aria-hidden="true" /> Insured</li>
+          <li><Droplets size={18} aria-hidden="true" /> Brings water and power</li>
+          <li><Clock3 size={18} aria-hidden="true" /> Confirmed by text within 2 business hours</li>
+        </ul>
       </div>
     </section>
   );
 }
 
-export function TrustBar() {
-  const items = [
-    { icon: MapPin, value: "League City", label: "mobile service" },
-    { icon: Sparkles, value: "Established 2016", label: "local detailing business" },
-    { icon: Star, value: "4.9 / 5", label: "public rating" },
-    { icon: Check, value: "High-attention work", label: "reviewed for thoroughness" }
-  ];
-
-  return <section className="trust-strip"><div className="shell trust-grid">{items.map(({ icon: Icon, value, label }) => <div className="trust-item" key={value}><Icon size={19} /><div><strong>{value}</strong><span>{label}</span></div></div>)}</div></section>;
+/* Objection rows: "Is this guy any good?", "What do I actually get?" (evidence beside packages), "My car is really bad" (bad interior pair). */
+export function Proof() {
+  if (!business.beforeAfter.length) return null;
+  return (
+    <section className="section section-proof" id="proof">
+      <SectionHeading kicker="Before and after" title={business.headlines.proof} body={business.mode === "concept" ? "Sample pairs. On a live site these are the detailer's own cars, nothing else." : "My own work, no stock photos."} />
+      <div className="ba-list">
+        {business.beforeAfter.map((pair, i) => <BeforeAfterSlider pair={pair} key={pair.id} eager={i === 0} />)}
+      </div>
+    </section>
+  );
 }
 
+/* Objection rows: "What will it cost for my vehicle?", "What do I actually get?", "How long will my car be tied up?", "My car is really bad". */
 export function Packages() {
+  const sizes = business.vehicleSizes;
   return (
-    <section className="section section-light" id="packages">
-      <div className="shell">
-        <div className="split-heading">
-          <SectionHeading kicker="CORE SERVICES" title="Start with what the vehicle actually needs." body="Perfexxion's public information emphasizes thorough detailing, paint correction, and ceramic coating rather than a one-size-fits-all menu." />
-          <a className="text-link" href="#quote">Tell us about your vehicle <ArrowRight size={16} /></a>
-        </div>
-        <div className="package-grid">
-          {packages.map((pkg) => (
-            <article className={`package-card ${pkg.featured ? "package-featured" : ""}`} id={pkg.id} key={pkg.id}>
-              {pkg.featured ? <span className="package-badge">SPECIALTY SERVICE</span> : null}
-              <div className="package-top"><div><span className="mini-label">{pkg.tagline}</span><h3>{pkg.name}</h3></div><div className="package-price"><span>PRICING</span><strong>{pkg.startingPrice ?? "Quote"}</strong></div></div>
-              <p>{pkg.description}</p>
-              <div className="package-meta"><span><Clock3 size={14} /> Time varies by condition</span><span><Sparkles size={14} /> {pkg.idealFor}</span></div>
-              <ul>{pkg.features.map((feature) => <li key={feature}><Check size={15} /> {feature}</li>)}</ul>
-              <a className={`button ${pkg.featured ? "button-accent" : "button-outline-dark"}`} href={getQuoteUrl(pkg)}>Request {pkg.name} Quote <ArrowRight size={16} /></a>
+    <section className="section" id="packages">
+      <SectionHeading kicker="Packages" title={business.headlines.packages} body={`Prices are by vehicle size and they're the price. ${business.mode === "concept" ? "Sample prices for a concept build." : "The only extras are the add-ons listed below, and you choose those."}`} />
+      <div className="package-grid">
+        {business.packages.map((pkg, index) => {
+          const proof = business.beforeAfter.find((p) => p.id === pkg.proofPairId);
+          return (
+            <article className={`package ${pkg.featured ? "is-featured" : ""}`} id={`package-${pkg.id}`} key={pkg.id} aria-labelledby={`pkg-${pkg.id}-title`}>
+              {pkg.featured ? <span className="package-flag">Most people choose this</span> : null}
+              <h3 id={`pkg-${pkg.id}-title`}>{pkg.name}</h3>
+              <p className="package-summary">{pkg.summary}</p>
+              <table className="price-table">
+                <caption className="sr-only">{pkg.name} price by vehicle size</caption>
+                <tbody>
+                  {sizes.map((s) => (
+                    <tr key={s.id}><th scope="row">{s.label}</th><td>{money(pkg.price[s.id])}</td></tr>
+                  ))}
+                </tbody>
+              </table>
+              <p className="package-time"><Clock3 size={18} aria-hidden="true" /> Car tied up about <strong>{pkg.time}</strong></p>
+              <ul className="package-includes">
+                {pkg.includes.map((item) => {
+                  const added = pkg.addsOverPrevious?.some((a) => item.toLowerCase().includes(a.toLowerCase().split(" ")[0]));
+                  return <li key={item} className={added ? "is-added" : ""}><Check size={18} aria-hidden="true" /><span>{item}</span></li>;
+                })}
+              </ul>
+              {pkg.addsOverPrevious && index > 0 ? <p className="package-diff">Highlighted items are what this adds over {business.packages[index - 1].name}.</p> : null}
+              {pkg.badCarNote ? <p className="package-note"><strong>Really dirty car?</strong> {pkg.badCarNote}</p> : null}
+              {proof ? <a className="package-proof" href="#proof">See a {proof.label.split(" · ")[1]?.toLowerCase() ?? "result"} before and after</a> : null}
+              <PackageButton packageId={pkg.id} label={`Request ${pkg.name}`} primary={pkg.featured} />
             </article>
+          );
+        })}
+      </div>
+
+      <div className="addons" id="add-ons">
+        <h3>Add-ons and surcharges</h3>
+        <p>Chosen by you in the form, never added on the day without asking. Here is what each one does and what it can't.</p>
+        <ul className="addon-list">
+          {business.addOns.map((a) => (
+            <li key={a.id}><div><strong>{a.name}</strong><span>{a.note}</span></div><em>{addOnPriceLabel(a)}</em></li>
           ))}
+        </ul>
+      </div>
+    </section>
+  );
+}
+
+/* Objection rows: "Do you need my water or power?", "Will you damage my paint or interior?", "What happens after I send this?" */
+export function Process() {
+  const van = imageAttrs(business.vanImage.src, "(min-width: 900px) 40vw, 100vw");
+  return (
+    <section className="section section-process" id="how">
+      <SectionHeading kicker="How it works" title={business.headlines.process} />
+      <div className="process-layout">
+        <ol className="process-steps">
+          {business.process.map((step, i) => (
+            <li key={step.title}><span className="process-num" aria-hidden="true">{i + 1}</span><div><h3>{step.title}</h3><p>{step.body}</p></div></li>
+          ))}
+        </ol>
+        <aside className="process-aside">
+          <img {...van} alt={business.vanImage.alt} loading="lazy" decoding="async" />
+          <dl>
+            <div><dt>Do you need my water or power?</dt><dd>{business.waterPowerAnswer}</dd></div>
+            <div><dt>Are you insured?</dt><dd>{business.insuredStatement}</dd></div>
+          </dl>
+        </aside>
+      </div>
+    </section>
+  );
+}
+
+/* Objection row: "Is this guy any good?" with reviewer name and source. */
+export function Reviews() {
+  if (!business.reviews.length) return null;
+  return (
+    <section className="section section-reviews" id="reviews">
+      <SectionHeading kicker="Reviews" title={business.headlines.reviews} body={business.mode === "concept" ? "Sample reviews written for this concept build. A live site shows real reviews, with permission, and links to the source." : undefined} />
+      <ul className="review-list">
+        {business.reviews.map((r) => (
+          <li className="review" key={r.name + r.quote.slice(0, 12)}>
+            <blockquote>{r.quote}</blockquote>
+            <footer><strong>{r.name}</strong><span>{r.service ? `${r.service} · ` : ""}{r.source}{business.mode === "concept" ? " (sample)" : ""}</span></footer>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+/* Objection rows: "Do you come to me?" (map or list of towns), hours. */
+export function Area() {
+  return (
+    <section className="section section-area" id="area">
+      <SectionHeading kicker="Service area and hours" title={business.headlines.area} />
+      <div className="area-layout">
+        <div className="area-card">
+          <h3><MapPin size={20} aria-hidden="true" /> Towns I cover</h3>
+          <ul className="town-list">{business.serviceArea.map((t) => <li key={t}>{t}</li>)}</ul>
+          <p>{business.serviceAreaNote}</p>
+          <TrackedLink href={smsWithBody(`Hi ${business.shortName}, do you cover my ZIP? `)} event="text_tap" where="area" className="button button-outline">
+            <MessageCircle size={18} aria-hidden="true" /> Text your ZIP
+          </TrackedLink>
+        </div>
+        <div className="area-card">
+          <h3><Clock3 size={20} aria-hidden="true" /> Hours</h3>
+          <table className="hours-table"><caption className="sr-only">Business hours</caption><tbody>{business.hours.map((h) => <tr key={h.days}><th scope="row">{h.days}</th><td>{h.hours}</td></tr>)}</tbody></table>
+          <p>Texts outside these hours get a reply the next morning.</p>
         </div>
       </div>
     </section>
   );
 }
 
-export function NeedFinder() {
+/* Objection rows: "Will you damage my paint?" (insured), "What happens after I send this?" (owner's name and photo by the form). */
+export function Owner() {
+  const photo = imageAttrs(business.owner.photo, "(min-width: 900px) 320px, 40vw");
   return (
-    <section className="section section-dark need-section">
-      <div className="shell">
-        <SectionHeading light kicker="WHAT DOES MY CAR NEED?" title="Describe the problem. Start there." body="The fastest way to a useful quote is to explain the vehicle, its condition, and the result you want." />
-        <div className="need-grid">{needMatches.map((item, index) => <a href={`#${item.targetId}`} className="need-card" key={item.prompt}><span className="need-index">0{index + 1}</span><div><h3>{item.prompt}</h3><p>{item.detail}</p></div><div className="need-route"><span>Good starting point</span><strong>{item.recommendation}</strong></div><ArrowRight size={18} /></a>)}</div>
+    <section className="section section-owner" id="owner">
+      <div className="owner-layout">
+        <img className="owner-photo" {...photo} alt={business.owner.photoAlt} loading="lazy" decoding="async" />
+        <div>
+          <span className="kicker">{business.headlines.owner}</span>
+          <h2>{business.owner.name}</h2>
+          <p className="owner-role">{business.owner.role} · {business.yearsInBusiness} years detailing in {business.town}</p>
+          <p>{business.owner.bio}</p>
+          <ul className="owner-facts">
+            <li><ShieldCheck size={18} aria-hidden="true" /> {business.insuredStatement}</li>
+            <li><Droplets size={18} aria-hidden="true" /> {business.waterPowerAnswer}</li>
+          </ul>
+        </div>
       </div>
     </section>
   );
 }
 
-export function Results() {
-  if (!business.features.beforeAfter) return null;
+/* Objection rows: "How do I book, do I pay up front?", "What happens after I send this?" */
+export function Booking() {
   return (
-    <section className="section result-section" id="results">
-      <div className="shell">
-        <SectionHeading kicker="BEFORE / AFTER" title="The work should speak for itself." body="This private preview is ready for Perfexxion's real before-and-after photography in the next pass." />
-        <div className="ba-wrap">{beforeAfter.map((item) => <BeforeAfterSlider item={item} key={item.id} />)}</div>
+    <section className="section section-book" id="book">
+      <div className="book-layout">
+        <div className="book-intro">
+          <span className="kicker">Two minutes, no payment</span>
+          <h2>{business.headlines.booking}</h2>
+          <p>A request, not a charge. {business.booking.responsePromise}</p>
+          <ul className="book-promises">
+            <li><Check size={18} aria-hidden="true" /> {business.booking.depositLine}</li>
+            <li><Check size={18} aria-hidden="true" /> {business.booking.cancellationLine}</li>
+            <li><Check size={18} aria-hidden="true" /> Price is set by vehicle size. It only changes if the car is in worse shape than described, and I'll say so before I start.</li>
+          </ul>
+          <p className="book-owner"><strong>{business.owner.name}</strong> reads every request. Owner, insured, {business.yearsInBusiness} years in {business.town}.</p>
+        </div>
+        <BookingForm />
       </div>
     </section>
   );
 }
 
-export function Gallery() {
-  return (
-    <section className="section gallery-section">
-      <div className="shell">
-        <div className="split-heading"><SectionHeading kicker="RESULTS" title="Built to showcase Perfexxion's actual work." body="The current images are temporary editorial placeholders. The next step is replacing them with Perfexxion's own vehicles, interiors, correction work, and coating results." /></div>
-        <div className="gallery-grid">{gallery.map((item, index) => <figure className={`gallery-item gallery-item-${index + 1}`} key={item.id}><img src={item.src} alt={item.alt} loading="lazy" /><figcaption><span>{item.category}</span><strong>{item.caption}</strong></figcaption></figure>)}</div>
-      </div>
-    </section>
-  );
-}
-
-export function Process() {
-  const steps = [
-    ["01", "Tell Ryan about the vehicle", "Share the vehicle type, condition, problem areas, and the result you want."],
-    ["02", "Get the scope right", "The service and price can be aligned to the actual work instead of guessing from a generic package."],
-    ["03", "Confirm the appointment", "Use the contact method Ryan confirms for scheduling."],
-    ["04", "Perfexxion comes to you", "Mobile detailing is the core service model publicly associated with the business."],
-    ["05", "Inspect the result", "The standard is simple: if it needs attention, it should not be overlooked."]
-  ];
-  return <section className="section section-light process-section"><div className="shell"><SectionHeading kicker="HOW IT WORKS" title="Simple from quote to finished vehicle." /><div className="process-grid">{steps.map(([number, title, copy]) => <article key={number}><span>{number}</span><h3>{title}</h3><p>{copy}</p></article>)}</div></div></section>;
-}
-
-export function Services() {
-  const enabled = services.filter((service) => service.enabled !== false && (!service.id.includes("ceramic") || business.features.ceramicCoating) && (!service.id.includes("paint-correction") || business.features.paintCorrection));
-  return (
-    <section className="section section-warm" id="services">
-      <div className="shell">
-        <SectionHeading kicker="SPECIALTY WORK" title="More than a quick clean." body="Perfexxion's public service information points to correction, coating, and finish work for customers who care about the details." />
-        <div className="service-grid">{enabled.map((service) => <article className="service-card" id={service.id} key={service.id}><div className="service-image"><img src={service.image} alt={service.name} loading="lazy" /><span>{service.eyebrow}</span></div><div className="service-body"><div><h3>{service.name}</h3><p>{service.description}</p></div><div className="service-footer"><strong>{service.startingPrice ? `From ${service.startingPrice}` : "Request a quote"}</strong><a href="#quote">Get quote <ArrowRight size={16} /></a></div></div></article>)}</div>
-      </div>
-    </section>
-  );
-}
-
-export function AddOns() {
-  return <section className="section add-on-section"><div className="shell"><SectionHeading light kicker="DETAIL-LEVEL ATTENTION" title="The small problem areas still matter." body="These are examples of issues publicly associated with Perfexxion's work. Exact scope should be confirmed with the vehicle." /><div className="addon-grid">{addOns.map((item) => <article key={item.name}><WandSparkles size={20} /><div><h3>{item.name}</h3><p>{item.description}</p></div><strong>{item.startingPrice ? `From ${item.startingPrice}` : "Ask"}</strong></article>)}</div></div></section>;
-}
-
-export function Maintenance() {
-  if (!business.features.maintenancePlans) return null;
-  return null;
-}
-
-export function ServiceArea() {
-  if (!business.features.serviceArea) return null;
-  return (
-    <section className="section section-light" id="area"><div className="shell area-layout"><div><SectionHeading kicker="MOBILE IN LEAGUE CITY" title="Tell us where the vehicle is." body="League City is the publicly verified home market. For locations outside the area, text your ZIP so Ryan can confirm availability." /><div className="area-actions"><a className="button button-dark" href={getSmsUrl("Hi Perfexxion, can you confirm whether you service my ZIP code?")}><MessageCircle size={17} /> Text your ZIP</a><a className="button button-outline-dark" href={phoneHref}><Phone size={17} /> Call</a></div></div><div className="area-card"><span className="mini-label">PUBLICLY VERIFIED AREA</span>{serviceAreas.map((area) => <div className="area-row" key={`${area.city}-${area.state}`}><MapPin size={17} /><span><strong>{area.city}, {area.state}</strong><small>{area.notes}</small></span>{area.travelFee ? <em>{area.travelFee}</em> : null}</div>)}<p>Outside League City? Text the ZIP code before scheduling.</p></div></div></section>
-  );
-}
-
-export function Reviews() {
-  return (
-    <section className="section reviews-section" id="reviews"><div className="shell reviews-layout"><div className="review-summary"><span className="kicker">PUBLIC REPUTATION</span><div className="big-rating"><strong>{business.googleRating ?? "—"}</strong><span>/5</span></div><div className="stars">{Array.from({ length: 5 }).map((_, index) => <Star key={index} size={19} fill="currentColor" />)}</div><p>{business.googleReviewCount ? `${business.googleReviewCount} public reviews on the local listing used for this preview.` : "Review data pending confirmation."}</p><div className="theme-list">{reviewThemes.map((theme) => <span key={theme}><Check size={13} /> {theme}</span>)}</div>{business.googleReviewsUrl ? <a className="text-link text-link-light" href={business.googleReviewsUrl} target="_blank" rel="noreferrer">Read reviews <ArrowUpRight size={16} /></a> : null}</div><div className="review-cards">{reviews.map((review) => <article className="review-card" key={review.id}><div className="review-stars">{Array.from({ length: review.rating }).map((_, i) => <Star key={i} size={14} fill="currentColor" />)}</div><blockquote>“{review.quote}”</blockquote><div><strong>{review.name}</strong><span>{review.detail}</span></div></article>)}</div></div></section>
-  );
-}
-
-export function Quote() {
-  return <section className="section quote-section" id="quote"><div className="shell quote-layout"><div><SectionHeading light kicker="REQUEST A QUOTE" title="Give Perfexxion the useful details up front." body="Choose the vehicle, service, condition, and ZIP. The site prepares a text message so nothing is stored here." /><div className="quote-contact"><a href={phoneHref}><Phone size={17} /> {business.phone}</a><a href={smsHref}><MessageCircle size={17} /> Text Perfexxion</a></div></div><QuoteBuilder /></div></section>;
-}
-
+/* Only what the sections above don't answer. */
 export function FAQ() {
-  return <section className="section section-light" id="faq"><div className="shell"><SectionHeading kicker="FAQ" title="The questions customers ask before reaching out." /><div className="faq-list">{faqs.map((item) => <details key={item.question}><summary>{item.question}<span>+</span></summary><p>{item.answer}</p></details>)}</div></div></section>;
-}
-
-export function FinalCTA() {
-  return <section className="final-cta"><div className="shell"><span className="kicker">PERFEXXION MOBILE DETAILING</span><h2>{business.tagline}</h2><p>Tell Ryan what you are driving, what condition it is in, and what result you want.</p><div><a className="button button-accent button-large" href="#quote">Request a Quote <ArrowRight size={18} /></a><a className="button button-ghost button-large" href={phoneHref}><Phone size={18} /> Call {business.phone}</a></div></div></section>;
+  if (!business.faqs.length) return null;
+  return (
+    <section className="section section-faq" id="faq">
+      <SectionHeading kicker="FAQ" title={business.headlines.faq} />
+      <div className="faq-list">
+        {business.faqs.map((f) => (
+          <details key={f.question}><summary>{f.question}</summary><p>{f.answer}</p></details>
+        ))}
+      </div>
+    </section>
+  );
 }
 
 export function Footer() {
-  return <footer className="site-footer"><div className="shell footer-grid"><div><a className="brand brand-footer" href="#top"><span className="brand-mark">P</span><span className="brand-copy"><strong>{business.shortName}</strong><small>MOBILE DETAILING</small></span></a><p>League City mobile detailing with a reputation for thoroughness, correction work, ceramic coating, and high-attention results.</p></div><div><strong>Explore</strong><a href="#packages">Services</a><a href="#results">Results</a><a href="#reviews">Reviews</a><a href="#faq">FAQ</a></div><div><strong>Contact</strong><a href={phoneHref}>{business.phone}</a><a href={smsHref}>Text for a quote</a><span>League City, TX</span></div></div><div className="shell footer-bottom"><span>© {new Date().getFullYear()} {business.businessName}</span>{business.previewMode ? <span>Private concept preview · details require owner confirmation before launch</span> : null}</div></footer>;
+  return (
+    <footer className="site-footer">
+      <div className="footer-grid">
+        <div>
+          <strong>{business.businessName}</strong>
+          <p>{business.mobile ? "Mobile detailing" : "Detailing"} in {business.town}, {business.state}.</p>
+        </div>
+        <div>
+          <strong>Contact</strong>
+          <a href={phoneHref}>{business.phoneDisplay}</a>
+          <a href={`mailto:${business.email}`}>{business.email}</a>
+        </div>
+        <div>
+          <strong>Site</strong>
+          <a href="#packages">Packages</a>
+          <a href="#book">Request a booking</a>
+          <a href="/privacy">Privacy</a>
+        </div>
+      </div>
+      <div className="footer-bottom">
+        <span>© {new Date().getFullYear()} {business.businessName}</span>
+        {business.mode === "concept" ? <span className="footer-concept">{business.concept.footerLine}</span> : null}
+      </div>
+    </footer>
+  );
 }
 
-export function MobileActionBar() {
-  return <div className="mobile-action-bar"><a href={smsHref}><MessageCircle size={18} /> Text</a><a className="mobile-primary" href="#quote">Request Quote <ArrowRight size={18} /></a></div>;
+export function MobileBar() {
+  return (
+    <div className="mobile-bar">
+      <TrackedLink href={phoneHref} event="call_tap" where="sticky" className="mobile-bar-call" ariaLabel={`Call ${business.phoneDisplay}`}>
+        <Phone size={20} aria-hidden="true" /> Call
+      </TrackedLink>
+      <a className="mobile-bar-primary" href="#book">Request a booking</a>
+    </div>
+  );
 }
