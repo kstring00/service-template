@@ -1,26 +1,18 @@
 import type { BusinessConfig } from "@/types/site";
 
-/**
- * PERFEXXION PROSPECT PREVIEW
- * Publicly verified facts are populated below. Anything not verified is intentionally omitted.
- * Keep previewMode on until Ryan confirms the content and approves launch.
- */
+/** Safe, non-client demo defaults. Customize before publishing a real business site. */
 export const business: BusinessConfig = {
   previewMode: true,
-  businessName: "Perfexxion Mobile Detailing",
-  shortName: "Perfexxion",
-  tagline: "If it's not perfect, I'm not done yet!",
-  description:
-    "League City mobile auto detailing focused on meticulous interior and exterior detailing, paint correction, ceramic coating, chrome polishing, and high-attention vehicle restoration.",
-  cityLine: "League City, TX · Mobile Detailing",
-  phone: "+1 (409) 877-8754",
-  smsNumber: "+1 (409) 877-8754",
-  city: "League City",
-  state: "TX",
-  googleRating: 4.9,
-  googleReviewCount: 9,
-  yearsInBusiness: 10,
-  mobileService: true,
+  businessName: "Your Business Name",
+  shortName: "Your Business",
+  tagline: "Reliable service. Clear communication. Quality work.",
+  description: "A customizable service-business website template. Replace this demonstration content with verified details for your business.",
+  cityLine: "Your service area",
+  city: "Your City",
+  state: "ST",
+  phone: "",
+  smsNumber: "",
+  mobileService: false,
   shopAvailable: false,
   brand: {
     background: "#f5f8fa",
@@ -34,14 +26,15 @@ export const business: BusinessConfig = {
     instantQuote: true,
     onlineBooking: false,
     maintenancePlans: false,
-    ceramicCoating: true,
-    paintCorrection: true,
+    ceramicCoating: false,
+    paintCorrection: false,
     fleetServices: false,
     promotions: false,
-    beforeAfter: true,
-    serviceArea: true
+    beforeAfter: false,
+    serviceArea: false
   }
 };
 
-export const phoneHref = `tel:${business.phone.replace(/[^+\d]/g, "")}`;
-export const smsHref = `sms:${business.smsNumber.replace(/[^+\d]/g, "")}`;
+/** Demo contact buttons remain on-page until real contact details are configured. */
+export const phoneHref = business.phone ? `tel:${business.phone.replace(/[^+\d]/g, "")}` : "#quote";
+export const smsHref = business.smsNumber ? `sms:${business.smsNumber.replace(/[^+\d]/g, "")}` : "#quote";
