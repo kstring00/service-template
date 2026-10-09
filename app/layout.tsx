@@ -3,7 +3,7 @@ import "./globals.css";
 import { business } from "@/config/business";
 
 export const metadata: Metadata = {
-  title: `${business.businessName} | Mobile Detailing`,
+  title: `${business.businessName} | Service Business`,
   description: business.description,
   robots: business.previewMode ? { index: false, follow: false } : { index: true, follow: true },
   openGraph: {
